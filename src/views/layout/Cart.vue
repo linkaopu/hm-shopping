@@ -58,8 +58,11 @@
 <script>
 import CountBox from '@/components/CountBox'
 import { mapState, mapGetters } from 'vuex'
+import loginConfirm from '@/mixins/loginConfirm'
 export default {
   name: 'CartPage',
+
+  mixins: [loginConfirm],
 
   components: {
     CountBox

@@ -101,7 +101,7 @@
                  </div>
                  <div class="showbtn" v-if="detail.stock_total > 0">
                    <div class="btn" v-if="mode === 'cart'" @click="addCart">加入购物车</div>
-                   <div class="btn now" v-if="mode === 'buyNow'">立刻购买</div>
+                   <div class="btn now" v-if="mode === 'buyNow'" @click="goBuyNow">立刻购买</div>
                  </div>
                  <div class="btn-none" v-else>该商品已抢完</div>
             </div>
@@ -116,9 +116,12 @@ import { getProDetailReq, getProCommentReq } from '@/api/product'
 import defaultImg from '@/assets/default-avatar.png'
 import CountBox from '@/components/CountBox.vue'
 import { addCartReq } from '@/api/cart'
+import loginConfirm from '@/mixins/loginConfirm'
 
 export default {
   name: 'ProDetail',
+
+  mixins: [loginConfirm],
 
   components: {
     CountBox
@@ -149,10 +152,8 @@ export default {
 
     async getProDetail (id) {
       const { data: { detail } } = await getProDetailReq(id)
-      console.log(detail)
       this.detail = detail
       this.images = detail.goods_images
-      console.log(this.images)
     },
 
     async getProComment (goodsId, limit) {
@@ -172,35 +173,30 @@ export default {
     },
 
     async addCart () {
-      // 判断token是否存在
-      const token = this.$store.getters.token
-      if (!token) {
-        this.$dialog.confirm({
-          title: '温馨提示',
-          message: '您还没有登录，是否前往登录？',
-          confirmButtonText: '去登录',
-          cancelButtonText: '再逛逛'
-        })
-          .then(() => {
-            // on confirm
-            this.$router.replace({
-              path: '/login',
-              query: {
-                backUrl: this.$route.fullPath
-              }
-            })
-          })
-          .catch(() => {
-            // on cancel
-            this.$toast('您可以先登录，或者继续逛逛哦')
-          })
-      } else {
-        const { data } = await addCartReq(this.goodsId, this.addCount, this.detail.skuList[0].goods_sku_id)
-        this.cartTotal = data.cartTotal
-        this.$toast('加入购物车成功')
-        this.showPannel = false
+      if (this.loginConfirm()) {
+        return
       }
+      const { data } = await addCartReq(this.goodsId, this.addCount, this.detail.skuList[0].goods_sku_id)
+      this.cartTotal = data.cartTotal
+      this.$toast('加入购物车成功')
+      this.showPannel = false
+    },
+
+    goBuyNow () {
+      if (this.loginConfirm()) {
+        return
+      }
+      this.$router.push({
+        path: '/pay',
+        query: {
+          mode: 'buyNow',
+          goodsId: this.goodsId,
+          goodsSkuId: this.detail.skuList[0].goods_sku_id,
+          goodsNum: this.addCount
+        }
+      })
     }
+
   },
 
   created () {

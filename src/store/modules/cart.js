@@ -62,6 +62,7 @@ export default {
     cartTotal (state) {
       return state.cartList.reduce((sum, item) => sum + item.goods_num, 0)
     },
+    // 选中的购物车数据
     selCartList (state) {
       return state.cartList.filter(item => item.isChecked)
     },

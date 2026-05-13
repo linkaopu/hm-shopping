@@ -116,7 +116,6 @@ export default {
         return
       }
       const { data } = await loginReq(this.mobilePohoneNum, this.inputSmsCode)
-      console.log(data)
       this.setUserInfo(data)
       // 判断有无回跳地址
       const url = this.$route.query.backUrl || '/'
